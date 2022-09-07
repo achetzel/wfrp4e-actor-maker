@@ -1,0 +1,9 @@
+{
+  "ACTORMAKER.actor.directory.button": "Generate NPC",
+  "ACTORMAKER.settings.defaultCustomGeneration.name": "Customize Actors",
+  "ACTORMAKER.settings.defaultCustomGeneration.name": "Allow creation of NPCs with selectable options.",
+  "ACTORMAKER.dependencies.miss.title": "Missing dependencies",
+  "ACTORMAKER.dependencies.miss.label": "Dependency",
+  "ACTORMAKER.common.button.OK": "OK",
+  "ACTORMAKER.notification.actor.created": "Actor {name} has been created"
+}
