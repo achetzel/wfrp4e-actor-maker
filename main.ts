@@ -1,9 +1,9 @@
 import RegisterSettings from './util/register-settings';
 import { actors, i18n, initTemplates, user, wfrp4e } from './constants';
-import { NpcGenerator } from './generators/npc/npc-generator';
+import { ActorMaker } from './modules/makers/actor-maker';
 
 Hooks.once('init', () => {
-  wfrp4e().npcGen = NpcGenerator;
+  wfrp4e().npcGen = ActorMaker;
 
   RegisterSettings.initSettings();
 
@@ -19,7 +19,7 @@ Hooks.once('init', () => {
 Hooks.on('renderActorDirectory', (_app: ActorSheet, html: JQuery) => {
   if (user().can('ACTOR_CREATE')) {
     addActorActionButton(html, 'ACTORMAKER.actor.directory.button', () => {
-      NpcGenerator.generateNpc();
+      ActorMaker.makeActor();
     });
   }
 });
