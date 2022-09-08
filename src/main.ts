@@ -1,5 +1,5 @@
 import RegisterSettings from './util/register-settings';
-import { actors, i18n, initTemplates, user, wfrp4e } from './constants';
+import { i18n, user, wfrp4e } from './constants';
 import { ActorMaker } from './modules/makers/actor-maker';
 
 Hooks.once('init', () => {
@@ -11,9 +11,9 @@ Hooks.once('init', () => {
     return JSON.stringify(context);
   });
 
-  initTemplates([
-    `modules/${RegisterSettings.moduleName}/templates/generation-profiles.html`
-  ]);
+  // initTemplates([
+  //   `modules/${RegisterSettings.moduleName}/templates/generation-profiles.html`
+  // ]);
 });
 
 Hooks.on('renderActorDirectory', (_app: ActorSheet, html: JQuery) => {

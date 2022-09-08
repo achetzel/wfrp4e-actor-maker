@@ -1,8 +1,9 @@
-import { actors, i18n, initTemplates, user, wfrp4e } from '../constants';
+import { wfrp4e } from '../constants';
+//import { actors, i18n, initTemplates, user, wfrp4e } from '../constants';
 
 export class SpeciesSpecifics {
 
-  public static async getSpecies (species: string) {
+  public static async getSpecies () {
     await wfrp4e().config.species;
   }
 
@@ -16,7 +17,7 @@ export class SpeciesSpecifics {
 
   public static async getSpeciesTalents (species: string, subspecies?: string) {
     let talentList = await wfrp4e().utility.speciesSkillsTalents(species, subspecies)['talents'];
-    let refinedTalentList: Array<string>;
+    let refinedTalentList: string[] = [];
     for (let talent of talentList) {
       if (!isNaN(talent)) {
         for (let i = 0; i < talent; i++) {
