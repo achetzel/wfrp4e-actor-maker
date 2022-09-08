@@ -3,7 +3,7 @@
     "build": "tsc -p tsconfig.json && cp -r module.json ./lang ./dist",
     "deploy-local": "yarn run build && yarn run localcopy",
     "localcopy": "cp -r ./dist/* $LOCAL_MOD_INSTALL",
-    "package": "rm -rf dist && yarn run build "
+    "package": "rm -rf dist && yarn run build && zip -mr ./dist/wfrp4e-actor-maker.zip ./dist/*"
   },
   "devDependencies": {
     "@league-of-foundry-developers/foundry-vtt-types": "^9.280.0",

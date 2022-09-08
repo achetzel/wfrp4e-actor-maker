@@ -25,6 +25,6 @@
     "./styles/main.css"
   ],
   "url": "https://github.com/achetzel/wfrp4e-actor-maker",
-  "download": "https://github.com/mcailleaux/WFRP4-FoundryVTT-wfrp4e-npc-generator/blob/dist-v4/dist/wfrp4e-npc-generator.zip?raw=true",
-  "manifest": "https://raw.githubusercontent.com/mcailleaux/WFRP4-FoundryVTT-wfrp4e-npc-generator/dist-v4/module.json"
+  "download": "https://github.com/achetzel/wfrp4e-actor-maker/blob/v1.0.0/dist/wfrp4e-actor-maker.zip?raw=true",
+  "manifest": "https://raw.githubusercontent.com/achetzel/wfrp4e-actor-maker/v1.0.0/module.json"
 }
