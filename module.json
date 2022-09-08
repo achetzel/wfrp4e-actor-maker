@@ -22,7 +22,7 @@
     }
   ],
   "styles": [
-    "./styles/main.css"
+    "./src/css/main.css"
   ],
   "url": "https://github.com/achetzel/wfrp4e-actor-maker",
   "download": "https://github.com/achetzel/wfrp4e-actor-maker/blob/v1.0.0/dist/wfrp4e-actor-maker.zip?raw=true",
