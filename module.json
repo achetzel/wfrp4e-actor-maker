@@ -1,0 +1,30 @@
+{
+  "name": "wfrp4e-actor-maker",
+  "title": "WFRP4E Actor Maker",
+  "description": "Full or Custom NPC Maker",
+  "version": "1.0.0",
+  "minimumCoreVersion": "10",
+  "compatibleCoreVersion": "10",
+  "author": "achetzel",
+  "systems": ["wfrp4e"],
+  "dependencies": [
+    {
+      "name": "wfrp4e-core",
+      "type": "module"
+    }
+  ],
+  "esmodules": ["main.js"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "styles": [
+    "./styles/main.css"
+  ],
+  "url": "https://github.com/achetzel/wfrp4e-actor-maker",
+  "download": "https://github.com/mcailleaux/WFRP4-FoundryVTT-wfrp4e-npc-generator/blob/dist-v4/dist/wfrp4e-npc-generator.zip?raw=true",
+  "manifest": "https://raw.githubusercontent.com/mcailleaux/WFRP4-FoundryVTT-wfrp4e-npc-generator/dist-v4/module.json"
+}
