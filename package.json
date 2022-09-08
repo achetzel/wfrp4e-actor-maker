@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "tsc -p tsconfig.json && cp -r module.json ./lang ./dist",
+    "build": "tsc -p tsconfig.json && cp -r module.json lang css ./dist",
     "deploy-local": "yarn run build && yarn run localcopy",
     "localcopy": "cp -r ./dist/* $LOCAL_MOD_INSTALL",
     "package": "rm -rf dist && yarn run build "
