@@ -1,12 +1,11 @@
 //import CheckDependencies from '../../../check-dependencies';
 //import { i18n, notifications } from '../../../constants';
 
-export class ActorMaker {
-
+export default class ActorMaker {
 
   public static async makeActor() {
     console.log("Button pushed!")
-  // public static async makeActor(event?: (model: NpcModelBuilder, actorData: any, actor: any) => void) {
+    // public static async makeActor(event?: (model: NpcModelBuilder, actorData: any, actor: any) => void) {
     // await this.generateNpcModel(async (model) => {
     //   const actorData = await NpcBuilder.buildActorData(model, 'npc');
     //   const actor = await NpcBuilder.createActor(model, actorData);

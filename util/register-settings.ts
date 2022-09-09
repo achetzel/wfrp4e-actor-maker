@@ -1,5 +1,3 @@
-import { i18n, settings } from '../constants';
-
 export default class RegisterSettings {
   public static moduleName: string;
 
@@ -10,9 +8,9 @@ export default class RegisterSettings {
   }
 
   private static registerSettings(moduleName: string) {
-    settings().register(moduleName, 'defaultCustomGeneration', {
-      name: i18n().localize('ACTORMAKER.settings.defaultCustomGeneration.name'),
-      hint: i18n().localize('ACTORMAKER.settings.defaultCustomGeneration.hint'),
+    game.settings.register(moduleName, 'defaultCustomGeneration', {
+      name: game.i18n.localize('ACTORMAKER.settings.defaultCustomGeneration.name'),
+      hint: game.i18n.localize('ACTORMAKER.settings.defaultCustomGeneration.hint'),
       scope: 'world',
       config: true,
       type: Boolean,

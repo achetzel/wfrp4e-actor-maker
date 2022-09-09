@@ -1,4 +1,4 @@
-import { i18n, modules } from './constants';
+import { i18n, modules } from './constants.js';
 
 export default class CheckDependencies {
   public static check(callback: (canRun: boolean) => void) {

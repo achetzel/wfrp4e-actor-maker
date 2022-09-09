@@ -1,12 +1,14 @@
 {
   "scripts": {
-    "build": "tsc -p tsconfig.json && cp -r module.json lang css ./dist",
+    "build": "yarn run js && cp -r module.json lang css ./dist",
+    "js": "",
     "deploy-local": "yarn run build && yarn run localcopy",
     "localcopy": "cp -r ./dist/* $LOCAL_MOD_INSTALL",
     "package": "rm -rf dist && yarn run build && cd dist && zip -mr wfrp4e-actor-maker.zip ./*"
   },
   "devDependencies": {
     "@league-of-foundry-developers/foundry-vtt-types": "^9.280.0",
-    "typescript": "^4.8.2"
+    "esbuild": "^0.15.7",
+    "less": "^4.1.3"
   }
 }
