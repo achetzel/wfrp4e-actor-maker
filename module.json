@@ -13,7 +13,7 @@
       "type": "module"
     }
   ],
-  "esmodules": ["main.js"],
+  "esmodules": ["maker.js"],
   "languages": [
     {
       "lang": "en",
