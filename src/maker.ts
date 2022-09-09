@@ -1,6 +1,6 @@
-import RegisterSettings from './util/register-settings';
+import RegisterSettings from './util/register-settings.ts';
 //import { i18n, user, wfrp4e } from './constants.ts';
-import { ActorMaker } from './modules/makers/actor-maker';
+import { ActorMaker } from './modules/makers/actor-maker.ts';
 
 Hooks.once('init', () => {
   //wfrp4e().npcGen = makeActor();
@@ -19,7 +19,7 @@ Hooks.once('init', () => {
 Hooks.on('renderActorDirectory', (_app: ActorSheet, html: JQuery) => {
   if (game.user.can('ACTOR_CREATE')) {
     addActorActionButton(html, 'ACTORMAKER.actor.directory.button', () => {
-      await ActorMaker.makeActor();
+      ActorMaker.makeActor();
     });
   }
 });

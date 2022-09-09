@@ -1,4 +1,4 @@
-import { wfrp4e } from '../constants.js';
+import { wfrp4e } from '../../constants.js';
 //import { actors, i18n, initTemplates, user, wfrp4e } from '../constants';
 
 export class SpeciesSpecifics {

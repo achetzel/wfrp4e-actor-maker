@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "build": "yarn run js && cp -r module.json lang css ./dist",
-    "js": "",
+    "build": "yarn run js && yarn run less && cp -r module.json lang ./dist",
+    "js": "esbuild src/maker.ts --bundle --outdir=dist",
+    "less": "lessc css/main.less dist/css/main.css",
     "deploy-local": "yarn run build && yarn run localcopy",
     "localcopy": "cp -r ./dist/* $LOCAL_MOD_INSTALL",
     "package": "rm -rf dist && yarn run build && cd dist && zip -mr wfrp4e-actor-maker.zip ./*"

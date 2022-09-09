@@ -1,7 +1,7 @@
 //import CheckDependencies from '../../../check-dependencies';
 //import { i18n, notifications } from '../../../constants';
 
-export default class ActorMaker {
+export class ActorMaker {
 
   public static async makeActor() {
     console.log("Button pushed!")
