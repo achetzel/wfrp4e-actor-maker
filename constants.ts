@@ -1,0 +1,15 @@
+export const wfrp4e = () => (game).wfrp4e;
+export const user = () => (game).user;
+export const actors = () => (game).actors;
+export const i18n = () => (game).i18n;
+export const modules = () => (game).modules;
+export const packs = () => (game).packs;
+export const babele = () => (game).babele;
+export const folders = () => (game).folders;
+export const settings = () => (game).settings;
+export const items = () => (game).items;
+export const world = () => (game).world;
+export const notifications = () => (ui).notifications;
+export const initTemplates = (paths) => loadTemplates(paths);
+export const names = () => (game).wfrp4e.names;
+export const generateName = (speciesKey) => names().generateName({ species });

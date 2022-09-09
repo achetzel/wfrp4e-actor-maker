@@ -1,23 +1,12 @@
 {
   "compilerOptions": {
-    "baseUrl": "tsconfig",
-    "lib": ["es2018", "dom"],
-    "declaration": true,
+    "target": "ES2020",
+    "module": "ES2020",
+    "lib": ["DOM", "ES6", "ES2020"],
+    "types": ["@league-of-foundry-developers/foundry-vtt-types/index-lenient"],
     "moduleResolution": "node",
-    "noEmitOnError": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUnusedParameters": true,
-    "noUnusedLocals": true,
-    "rootDir": "src/",
-    "outDir": "dist",
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "inlineSources": true,
-    "sourceRoot": "scr",
-    "strictNullChecks": true,
-    "target": "es6",
-    "types": ["@league-of-foundry-developers/foundry-vtt-types"]
-  },
-  "include": ["src/**/*"]
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "strictNullChecks": true
+  }
 }

@@ -1,9 +1,9 @@
-import RegisterSettings from './util/register-settings';
-import { i18n, user, wfrp4e } from './constants';
-import { ActorMaker } from './modules/makers/actor-maker';
+import RegisterSettings from './util/register-settings.ts';
+//import { i18n, user, wfrp4e } from './constants.ts';
+import { ActorMaker } from './modules/makers/actor-maker.ts';
 
 Hooks.once('init', () => {
-  wfrp4e().npcGen = ActorMaker;
+  //wfrp4e().npcGen = makeActor();
 
   RegisterSettings.initSettings();
 
@@ -17,17 +17,17 @@ Hooks.once('init', () => {
 });
 
 Hooks.on('renderActorDirectory', (_app: ActorSheet, html: JQuery) => {
-  if (user().can('ACTOR_CREATE')) {
+  if (game.user.can('ACTOR_CREATE')) {
     addActorActionButton(html, 'ACTORMAKER.actor.directory.button', () => {
       ActorMaker.makeActor();
     });
   }
 });
 
-function addActorActionButton( html: JQuery, label: string, onClick: () => void ) {
+function addActorActionButton(html: JQuery, label: string, onClick: () => void) {
   const button = document.createElement('button');
   button.style.width = '95%';
-  button.innerHTML = i18n().localize(label);
+  button.innerHTML = game.i18n.localize(label);
   button.addEventListener('click', () => {
     onClick();
   });
