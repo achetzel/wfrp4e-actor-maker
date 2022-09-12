@@ -1,0 +1,30 @@
+{
+  "name": "wfrp4e-actor-maker",
+  "title": "WFRP4E Actor Maker",
+  "description": "Full or Custom NPC Maker",
+  "version": "1.0.0",
+  "minimumCoreVersion": "10",
+  "compatibleCoreVersion": "10",
+  "author": "achetzel",
+  "systems": ["wfrp4e"],
+  "dependencies": [
+    {
+      "name": "wfrp4e-core",
+      "type": "module"
+    }
+  ],
+  "esmodules": ["maker.js"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "styles": [
+    "css/main.css"
+  ],
+  "url": "https://github.com/achetzel/wfrp4e-actor-maker",
+  "download": "https://github.com/achetzel/wfrp4e-actor-maker/blob/v1.0.0/dist/wfrp4e-actor-maker.zip?raw=true",
+  "manifest": "https://raw.githubusercontent.com/achetzel/wfrp4e-actor-maker/v1.0.0/module.json"
+}

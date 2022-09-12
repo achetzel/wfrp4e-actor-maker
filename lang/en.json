@@ -1,0 +1,22 @@
+{
+  "ACTORMAKER.actor.directory.button": "Make Actor",
+  "ACTORMAKER.settings.customMake.name": "Customize Actors",
+  "ACTORMAKER.settings.customMake.hint": "Allow creation of NPCs with selectable options. Otherwise everything below is ignored.",
+  "ACTORMAKER.settings.includeClassTrappings.name": "Include Class Trappings",
+  "ACTORMAKER.settings.includeClassTrappings.hint": "Start entity with basic class trappings.",
+  "ACTORMAKER.settings.includeCareerTrappings.name": "Include Career Trappings",
+  "ACTORMAKER.settings.includeCareerTrappings.hint": "Start entity with basic career trappings.",
+  "ACTORMAKER.settings.includeCoin.name": "Include Starting Money",
+  "ACTORMAKER.settings.includeCoin.hint": "Generate coins based off of social level.",
+  "ACTORMAKER.settings.includeWeapon.name": "Include Weapon(s)",
+  "ACTORMAKER.settings.includeWeapon.hint": "Generate random additional weapons",
+  "ACTORMAKER.settings.includeMutations.name": "Roll Mutations",
+  "ACTORMAKER.settings.includeMutations.hint": "Entity touched by chaos? This is the option for you.",
+  "ACTORMAKER.settings.includeMagic.name": "Generate Spells",
+  "ACTORMAKER.settings.includeMagic.hint": "Pick spells/prayers based off available talents",
+  "ACTORMAKER.dependencies.miss.title": "Missing dependencies",
+  "ACTORMAKER.dependencies.miss.label": "Dependency",
+  "ACTORMAKER.common.button.OK": "OK",
+  "ACTORMAKER.notification.actor.created": "Actor {name} has been created",
+  "ACTORMAKER.notification.error.packs": "Error in allBasicSkills method retrieving packs"
+}
