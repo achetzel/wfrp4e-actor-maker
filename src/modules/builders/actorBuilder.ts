@@ -1,3 +1,5 @@
+import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+import stat = Deno.stat;
 
 export default class ActorBuilder {
     public static async buildActorData() {
@@ -14,9 +16,16 @@ export default class ActorBuilder {
         }
         const characteristics = await this.speciesCharacteristics(species);
         const move: number = await game.wfrp4e.config.speciesMovement[species];
-        const name: string = await game.wfrp4e.names.generateName({species: species, gender: gender})
+        const name: string = await game.wfrp4e.names.generateName({species: species, gender: gender});
+
+        let itemData: ItemData[] = [];
         const skills = await this.allBasicSkills();
-        const career = await this.generateCareer(species, subspecies);
+        itemData.push(...skills);
+        const careerName = await this.rollCareer(species, subspecies);
+        const careerData = await this.getCareerData(careerName);
+        const status = careerData.system.status;
+        status.value = game.wfrp4e.config.statusTiers[status.tier] + " " + status.standing;
+        itemData.push(careerData);
         const actorData = {
             name: name,
             type: 'npc',
@@ -43,10 +52,11 @@ export default class ActorBuilder {
                         value: move,
                         walk: move * 2,
                         run: move * 4
-                    }
+                    },
+                    status: status
                 },
             },
-            items: skills
+            items: itemData
         }
         if (subspecies !== null) {
             actorData.system.details.species.subspecies = subspecies;
@@ -96,28 +106,32 @@ export default class ActorBuilder {
         return returnSkills;
     }
 
-    // straight out stolen from wfrp4e.js cause no exports
-    private static async generateCareer(species: string, subspecies: string) {
-        let returnCareers = [];
-        const packs = game.wfrp4e.tags.getPacksWithTag(["money", "skill"]);
-        if (!packs.length)
-            return ui.notifications.error(game.i18n.localize("ACTORMAKER.notification.error.packs"));
-        for (let pack of packs) {
-            let items;
-            await pack.getDocuments().then((content) => items = content.filter((i) => i.type == "skill"));
-            for (let i of items) {
-                if (i.system.advanced.value == "bsc") {
-                    if (i.system.grouped.value != "noSpec") {
-                        let skill = i.toObject();
-                        let startParen = skill.name.indexOf("(");
-                        skill.name = skill.name.substring(0, startParen).trim();
-                        if (returnSkills.filter((x) => x.name.includes(skill.name)).length <= 0)
-                            returnSkills.push(skill);
-                    } else
-                        returnSkills.push(i.toObject());
-                }
-            }
+    private static async rollCareer(species: string, subspecies?: string) {
+        if (species == "human" && !subspecies) {
+            subspecies = "reiklander";
         }
-        return returnSkills;
+        // TODO: Try / Catch
+        let roll = await game.wfrp4e.tables.rollTable("career", {}, species + "-" + subspecies);
+        return roll.object.text;
+    }
+
+    private static async getCareerData(careerName: string) {
+        let packResults = game.wfrp4e.tags.getPacksWithTag("career");
+        let itemResults = game.items.filter((i) => i.type == "career");
+        let careerFound;
+        for (let pack of packResults) {
+            itemResults = itemResults.concat((await pack.getDocuments()).filter((i) => i.type == "career"));
+        }
+        for (let career of itemResults) {
+            if (career.system.careergroup.value == careerName && career.system.level.value == 1)
+                careerFound = career.toObject();
+            if (careerFound)
+                break;
+        }
+        if (!careerFound) {
+            return ui.notifications.error(`Career ${careerName} not found`);
+        } else {
+            return careerFound;
+        }
     }
 }
