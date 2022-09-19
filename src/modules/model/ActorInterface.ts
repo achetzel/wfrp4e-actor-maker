@@ -1,9 +1,9 @@
 import { ItemData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 
 export interface ActorData {
-    name: string,
+    name?: string,
     type: string,
-    flags: {
+    flags?: {
         autoCalcRun: boolean,
         autoCalcWalk: boolean,
         autoCalcWounds: boolean,
@@ -13,7 +13,7 @@ export interface ActorData {
         autoCalcSize: boolean
     },
     system: {
-        characteristics: {
+        characteristics?: {
             [key: string]: {
                 initial: number,
                 advances: number
@@ -24,22 +24,21 @@ export interface ActorData {
                 value: string
             },
             species: {
-                value: species,
+                value: string,
                 subspecies?: string
             },
-            move: {
-                move: number,
+            move?: {
+                value: number,
                 walk: number,
                 run: number
             }
-            status: {
+            status?: {
                 standing: string,
                 tier: number
             }
         }
-    }
-    items: ItemData[]
+    },
+    items?: ItemData[]
 }
-
 
 

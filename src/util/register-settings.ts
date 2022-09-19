@@ -11,6 +11,8 @@ let CFG: CFG = {
   }
 }
 
+// TODO: number of careers, max career level, Alt race randomization
+
 export class RegisterSettings {
 
   public static initSettings() {
@@ -37,17 +39,15 @@ type SETTING = {
   default: boolean
 }
 
-type SETTINGS = {
-  customize: SETTING,
-  classTrappings: SETTING,
-  careerTrappings: SETTING,
-  money: SETTING,
-  weapon: SETTING,
-  mutations: SETTING,
-  magic: SETTING
-};
-
 export type CFG = {
   module: string,
-  SETTING: SETTINGS
+  SETTING: {
+    customize: SETTING,
+    classTrappings: SETTING,
+    careerTrappings: SETTING,
+    money: SETTING,
+    weapon: SETTING,
+    mutations: SETTING,
+    magic: SETTING
+  }
 }
