@@ -1,10 +1,12 @@
 import {ActorData} from "../modules/model/ActorInterface.ts";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
+import {HelperUtility} from "./HelperUtil.ts";
 
 export class SpeciesSpecifics {
 
   public data: ActorData;
   public species: string;
+  public subspecies: string;
   public gender: string;
 
   public static async processSpeciesInfo (species: string, gender: string, type: string): ActorData {
@@ -24,8 +26,7 @@ export class SpeciesSpecifics {
       }
     }
     this.data = data;
-    // species
-    // await this.rollSpecies();
+
     // subspecies
     await this.getSubSpecies();
     // name
@@ -34,17 +35,14 @@ export class SpeciesSpecifics {
     await this.genSpeciesCharacteristics();
     // move stat
     await this.addSpeciesMove();
+    // species skills
+    await this.getSpeciesSkills();
     // career
     const careerName = await this.rollCareer(this.species, this.data.system.details.species.subspecies);
     await this.addCareerData(careerName);
 
     return this.data;
 
-  }
-
-  private static async rollSpecies(): void {
-    this.species = (await game.wfrp4e.tables.rollTable('species')).species;
-    this.data.system.details.species.value = this.species;
   }
 
   private static async getSubSpecies (): void {
@@ -81,6 +79,70 @@ export class SpeciesSpecifics {
       walk: move * 2,
       run: move * 3
     };
+  }
+
+  private static async getSpeciesSkills (): void {
+    let returnSkills = [];
+    const speciesSkills: Array<string> = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['skills'];
+    console.log("SPECIES SKILL");
+    console.log(speciesSkills);
+
+    const packs = game.wfrp4e.tags.getPacksWithTag(["money", "skill"]);
+
+    if (!packs.length) {
+      return ui.notifications.error(game.i18n.localize("ACTORMAKER.notification.error.packs"));
+    }
+
+    for (let pack of packs) {
+      let packSkills;
+      await pack.getDocuments().then((content) => packSkills = content.filter((i) => i.type == "skill"));
+
+      for (let s: string of speciesSkills) {
+
+        for (let p: ItemData of packSkills) {
+          /* Get Lore out of the way. Lore is almost always
+             populated, but doesn't always match an existing
+             skill ( i.e. Lore (Reikland) )
+           */
+          if (s.startsWith("Lore") && p.name == "Lore ()") {
+            let dupe = p.toObject();
+            dupe.name = s;
+            dupe._id = HelperUtility.getRandomId();
+            returnSkills.push(dupe);
+          } else if (s.startsWith("Lore") && p.name != "Lore ()") {
+            continue;
+          } else {
+            let scrubbedSkill: string = await HelperUtility.skillTextScrubber(s, p.name);
+
+            if (scrubbedSkill == p.name) {
+              if (p.system.grouped.value != "noSpec") {
+                let skill = p.toObject();
+                if (returnSkills.filter((x) => x.name.includes(skill.name)).length <= 0)
+                  returnSkills.push(skill);
+              } else {
+                returnSkills.push(p.toObject());
+              }
+            }
+          }
+        }
+      }
+    }
+    console.log(returnSkills);
+  }
+
+  private static async getSpeciesTalents (): void {
+    let talentList = await game.wfrp4e.utility.speciesSkillsTalents(species, subspecies)['talents'];
+    let refinedTalentList: string[] = [];
+    for (let talent of talentList) {
+      if (!isNaN(talent)) {
+        for (let i: number = 0; i < talent; i++) {
+          refinedTalentList.push((await game.wfrp4e.tables.rollTable("talents")).object.text);
+        }
+        continue;
+      } else {
+        refinedTalentList.push(talent);
+      }
+    }
   }
 
   private static async rollCareer(species: string, subspecies?: string) {
@@ -120,31 +182,13 @@ export class SpeciesSpecifics {
     // oddly enough it comes back with codes, but "description" has go through config
     const status = careerData.system.status;
     careerData.system.status = game.wfrp4e.config.statusTiers[status.tier] + " " + status.standing;
+    // TODO: Can do this because only 1 career atm. Need to iterate obj when option for
+    // TODO: multiple careers is implemented (like skills)
     if(this.data.items) {
       this.data.items.push(careerData);
     } else {
       this.data.items = [];
       this.data.items.push(careerData);
-    }
-
-  }
-
-  public static async getSpeciesSkills (species: string, subspecies?: string) {
-    await game.wfrp4e.utility.speciesSkillsTalents(species, subspecies)['skills'];
-  }
-
-  public static async getSpeciesTalents (species: string, subspecies?: string) {
-    let talentList = await game.wfrp4e.utility.speciesSkillsTalents(species, subspecies)['talents'];
-    let refinedTalentList: string[] = [];
-    for (let talent of talentList) {
-      if (!isNaN(talent)) {
-        for (let i = 0; i < talent; i++) {
-          refinedTalentList.push((await game.wfrp4e.tables.rollTable("talents")).object.text);
-        }
-        continue;
-      } else {
-        refinedTalentList.push(talent);
-      }
     }
   }
 }

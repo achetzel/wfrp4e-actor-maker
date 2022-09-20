@@ -8,9 +8,9 @@ export default class ActorBuilder {
         // TODO: differentiate types
         const type: string = "npc";
         const species: string = (await game.wfrp4e.tables.rollTable('species')).species;
-        let gender: string = "male";
-        if ( (Math.round(Math.random()) + 1) == 1) {
-            gender = "female";
+        let gender: string = "Male";
+        if (Math.random() < 0.5) {
+            gender = "Female";
         }
         let data: ActorData = await SpeciesSpecifics.processSpeciesInfo(species, gender, type);
         // basic skills
@@ -49,13 +49,16 @@ export default class ActorBuilder {
                         skill.name = skill.name.substring(0, startParen).trim();
                         if (returnSkills.filter((x) => x.name.includes(skill.name)).length <= 0)
                             returnSkills.push(skill);
-                    } else
+                    } else {
                         returnSkills.push(i.toObject());
+                    }
                 }
             }
         }
+        returnSkills.push({name: "Lore (Cookies)", type: "skill"});
+
+        //console.log(returnSkills);
+
         return returnSkills;
     }
-
-
 }
