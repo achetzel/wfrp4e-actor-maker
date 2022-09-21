@@ -19,5 +19,6 @@
   "ACTORMAKER.common.button.OK": "OK",
   "ACTORMAKER.notification.actor.created": "Actor {name} has been created",
   "ACTORMAKER.notification.error.packs": "Error in allBasicSkills method retrieving packs",
-  "ACTORMAKER.notification.error.randomQuantity": "Quantity did not provide enough randomness (low max value)"
+  "ACTORMAKER.notification.error.randomQuantity": "Quantity did not provide enough randomness (low max value)",
+  "ACTORMAKER.notification.error.talent": "Error could not find requested talent: {name}"
 }

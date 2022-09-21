@@ -164,12 +164,12 @@ export class SpeciesSpecifics {
           refinedTalentList.push(await HelperUtility.getRandomTalent());
         }
         continue;
-      // Middenheim mod has text that could have just been a number
-      // AND it can also be a choice ...
+      // choice + Middenheim mod has text that could have just been a number
       } else if (talent.includes(",")) {
         const talentChoice: Array<string> = talent.split(",");
         const random = Math.round(Math.random() * (talentChoice.length - 1));
         let pickedTalent = talentChoice[random].trim();
+        // chose and then see if it's a middenheim text rando talent
         if (pickedTalent.includes("Additional Random Talent")) {
           refinedTalentList.push(await HelperUtility.getRandomTalent());
         } else {
@@ -183,8 +183,56 @@ export class SpeciesSpecifics {
         refinedTalentList.push(talent);
       }
     }
-    // TODO: Find dupes and see if they can be ranked up or need to pick another
-    console.log(refinedTalentList);
+    let addTalents = [];
+    const packs = game.wfrp4e.tags.getPacksWithTag(["talent"]);
+    for (let pack of packs) {
+      let items;
+
+      await pack.getDocuments().then((content) => items = content.filter((i) => i.type == "talent"));
+
+      for (let talentName: string of refinedTalentList) {
+        // no pack talents include any parenthesis
+        let modTalentName: string = "";
+        if (talentName.includes("(")) {
+          let startParen: number = talentName.indexOf("(");
+          modTalentName = talentName.substring(0, startParen).trim();
+        }
+        // find the base talent if it has been changed and give it current name
+        // and new _id
+        if (modTalentName.length !== 0 && modTalentName.length !== talentName) {
+          if (items.some(e => e.name === modTalentName)) {
+            const idx: number = items.findIndex(e => e.name === modTalentName);
+            let dupe = items[idx].toObject();
+            dupe.name = talentName;
+            dupe._id = HelperUtility.getRandomId();
+            addTalents.push(dupe);
+          } else {
+            ui.notifications.error(
+                game.i18n.format('ACTORMAKER.notification.error.talent', { name: modTalentName })
+            );
+          }
+        // standard search
+        } else {
+          if (items.some(e => e.name === talentName)) {
+            const idx: number = items.findIndex(e => e.name === talentName);
+            addTalents.push(items[idx].toObject());
+          } else {
+            ui.notifications.error(
+                game.i18n.format('ACTORMAKER.notification.error.talent', { name: talentName })
+            );
+          }
+        }
+      }
+    }
+// TODO: Dupes both show up -> raise rank or pick another
+    /*
+       Now that we have a proper object find the duplicates and either
+       raise their rank or find a replacement. This sucks because you need
+       object data to determine max rank, as well as, a characteristic in
+       most instances
+    */
+    
+    console.log(addTalents);
   }
 
   private static async rollCareer(species: string, subspecies?: string) {
