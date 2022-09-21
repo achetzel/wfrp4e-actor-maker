@@ -59,10 +59,9 @@ export class HelperUtility {
         return [...foundArray];
     }
 
-    public static getRandomNumber(max: number): number {
-        let result = Math.floor(Math.random() * (max - 1));
-
-        return result;
+    public static async getRandomTalent(): Promise<string> {
+        const talent = (await game.wfrp4e.tables.rollTable("talents")).object.text;
+        return Promise.resolve(talent);
     }
 
 

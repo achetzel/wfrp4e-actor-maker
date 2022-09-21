@@ -39,6 +39,8 @@ export class SpeciesSpecifics {
     await this.addSpeciesMove();
     // species skills
     await this.addSpeciesSkills();
+    // species skills
+    await this.addSpeciesTalents();
     // career
     const careerName = await this.rollCareer(this.species, this.data.system.details.species.subspecies);
     await this.addCareerData(careerName);
@@ -151,19 +153,38 @@ export class SpeciesSpecifics {
     }
   }
 
-  private static async getSpeciesTalents (): void {
-    let talentList = await game.wfrp4e.utility.speciesSkillsTalents(species, subspecies)['talents'];
+  private static async addSpeciesTalents (): void {
+    let talentList = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['talents'];
+    console.log(talentList);
     let refinedTalentList: string[] = [];
     for (let talent of talentList) {
+      // number provided in talent array
       if (!isNaN(talent)) {
         for (let i: number = 0; i < talent; i++) {
-          refinedTalentList.push((await game.wfrp4e.tables.rollTable("talents")).object.text);
+          refinedTalentList.push(await HelperUtility.getRandomTalent());
         }
         continue;
+      // Middenheim mod has text that could have just been a number
+      // AND it can also be a choice ...
+      } else if (talent.includes(",")) {
+        const talentChoice: Array<string> = talent.split(",");
+        const random = Math.round(Math.random() * (talentChoice.length - 1));
+        let pickedTalent = talentChoice[random].trim();
+        if (pickedTalent.includes("Additional Random Talent")) {
+          refinedTalentList.push(await HelperUtility.getRandomTalent());
+        } else {
+          refinedTalentList.push(talentChoice[random].trim());
+        }
+      // Middenheim mod has text that could have just been a number
+      } else if (talent.includes("Additional Random Talent")) {
+        refinedTalentList.push(await HelperUtility.getRandomTalent());
+      // the rest
       } else {
         refinedTalentList.push(talent);
       }
     }
+    // TODO: Find dupes and see if they can be ranked up or need to pick another
+    console.log(refinedTalentList);
   }
 
   private static async rollCareer(species: string, subspecies?: string) {
