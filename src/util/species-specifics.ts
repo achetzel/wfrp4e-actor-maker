@@ -10,7 +10,7 @@ export class SpeciesSpecifics {
   public subspecies: string;
   public gender: string;
 
-  public static async processSpeciesInfo (species: string, gender: string, type: string): ActorData {
+  public static async processSpeciesInfo (species: string, gender: string, type: string, basicSkills: ItemData): ActorData {
     this.species = species;
     this.gender = gender;
     let data: ActorData = {
@@ -24,7 +24,8 @@ export class SpeciesSpecifics {
             value: species
           }
         }
-      }
+      },
+      items: basicSkills
     }
     this.data = data;
 
@@ -37,7 +38,7 @@ export class SpeciesSpecifics {
     // move stat
     await this.addSpeciesMove();
     // species skills
-    await this.getSpeciesSkills();
+    await this.addSpeciesSkills();
     // career
     const careerName = await this.rollCareer(this.species, this.data.system.details.species.subspecies);
     await this.addCareerData(careerName);
@@ -56,8 +57,7 @@ export class SpeciesSpecifics {
   }
 
   private static async genSpeciesName (): void {
-    const name: string = await game.wfrp4e.names.generateName({species: this.species, "gender": this.gender});
-    this.data.name = name;
+    this.data.name = await game.wfrp4e.names.generateName({species: this.species, "gender": this.gender});
   }
 
   private static async genSpeciesCharacteristics (): void {
@@ -82,8 +82,8 @@ export class SpeciesSpecifics {
     };
   }
 
-  private static async getSpeciesSkills (): void {
-    let returnSkills = [];
+  private static async addSpeciesSkills (): void {
+    let addSkills = [];
     let allSpeciesSkills: Array<string> = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['skills'];
     let keepSpeciesSkills: Array<string> = [];
     let skillsToAdv: number = 6;
@@ -116,7 +116,7 @@ export class SpeciesSpecifics {
             dupe._id = HelperUtility.getRandomId();
             dupe.system.advances.value = skillsToAdv > 3 ? 5 : 3;
             skillsToAdv--;
-            returnSkills.push(dupe);
+            addSkills.push(dupe);
           } else if (s.startsWith("Lore") && p.name != "Lore ()") {
             continue;
           } else {
@@ -125,23 +125,30 @@ export class SpeciesSpecifics {
             if (scrubbedSkill == p.name) {
               if (p.system.grouped.value != "noSpec") {
                 let skill = p.toObject();
-                if (returnSkills.filter((x) => x.name.includes(skill.name)).length <= 0)
+                if (addSkills.filter((x) => x.name.includes(skill.name)).length <= 0)
                   skill.system.advances.value = skillsToAdv > 3 ? 5 : 3;
                   skillsToAdv--;
-                  returnSkills.push(skill);
+                  addSkills.push(skill);
               } else {
                 let dupe = p.toObject();
                 dupe.system.advances.value = skillsToAdv > 3 ? 5 : 3;
                 skillsToAdv--;
-                returnSkills.push(dupe);
+                addSkills.push(dupe);
               }
             }
           }
         }
       }
     }
-    console.log(returnSkills);
-    //this.data.items.push(returnSkills);
+    for (let i: number = 0; i < addSkills.length; i++) {
+      if (this.data.items.some(e => e._id === addSkills[i]._id)) {
+        const idx: number = this.data.items.findIndex(e => e._id === addSkills[i]._id);
+        this.data.items.splice(idx, 1);
+        this.data.items.push(addSkills[i]);
+      } else {
+        this.data.items.push(addSkills[i]);
+      }
+    }
   }
 
   private static async getSpeciesTalents (): void {

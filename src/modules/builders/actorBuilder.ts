@@ -12,17 +12,16 @@ export default class ActorBuilder {
         if (Math.random() < 0.5) {
             gender = "Female";
         }
-        let data: ActorData = await SpeciesSpecifics.processSpeciesInfo(species, gender, type);
-        // basic skills
-        let skills: ItemData = await this.allBasicSkills();
-
-        if (data.items) {
-            for (let i = 0; i < skills.length; i++)
-            data.items.push(skills[i]);
-        } else {
-            data.items = [];
-            data.items.push(skills);
-        }
+        /*
+           Add basic skills first and then replace them as needed with
+           species advancements. This also makes it easier later to
+           push additional items without worrying if the object was
+           instantiated.
+        */
+        let basicSkills: ItemData = await this.allBasicSkills();
+        // species determines name, chars, some skills,
+        // move, and career
+        let data: ActorData = await SpeciesSpecifics.processSpeciesInfo(species, gender, type, basicSkills);
 
         return Promise.resolve(data);
     }
