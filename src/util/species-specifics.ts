@@ -1,6 +1,7 @@
 import {ActorData} from "../modules/model/ActorInterface.ts";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {HelperUtility} from "./HelperUtil.ts";
+import kill = Deno.kill;
 
 export class SpeciesSpecifics {
 
@@ -83,10 +84,15 @@ export class SpeciesSpecifics {
 
   private static async getSpeciesSkills (): void {
     let returnSkills = [];
-    const speciesSkills: Array<string> = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['skills'];
-    console.log("SPECIES SKILL");
-    console.log(speciesSkills);
+    let allSpeciesSkills: Array<string> = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['skills'];
+    let keepSpeciesSkills: Array<string> = [];
+    let skillsToAdv: number = 6;
+    let keepSkills: Array<number> = HelperUtility.getRandomUniqueNumbers(allSpeciesSkills.length, skillsToAdv);
 
+
+    for (let i: number of keepSkills) {
+      keepSpeciesSkills.push(allSpeciesSkills[i]);
+    }
     const packs = game.wfrp4e.tags.getPacksWithTag(["money", "skill"]);
 
     if (!packs.length) {
@@ -97,7 +103,7 @@ export class SpeciesSpecifics {
       let packSkills;
       await pack.getDocuments().then((content) => packSkills = content.filter((i) => i.type == "skill"));
 
-      for (let s: string of speciesSkills) {
+      for (let s: string of keepSpeciesSkills) {
 
         for (let p: ItemData of packSkills) {
           /* Get Lore out of the way. Lore is almost always
@@ -108,6 +114,8 @@ export class SpeciesSpecifics {
             let dupe = p.toObject();
             dupe.name = s;
             dupe._id = HelperUtility.getRandomId();
+            dupe.system.advances.value = skillsToAdv > 3 ? 5 : 3;
+            skillsToAdv--;
             returnSkills.push(dupe);
           } else if (s.startsWith("Lore") && p.name != "Lore ()") {
             continue;
@@ -118,9 +126,14 @@ export class SpeciesSpecifics {
               if (p.system.grouped.value != "noSpec") {
                 let skill = p.toObject();
                 if (returnSkills.filter((x) => x.name.includes(skill.name)).length <= 0)
+                  skill.system.advances.value = skillsToAdv > 3 ? 5 : 3;
+                  skillsToAdv--;
                   returnSkills.push(skill);
               } else {
-                returnSkills.push(p.toObject());
+                let dupe = p.toObject();
+                dupe.system.advances.value = skillsToAdv > 3 ? 5 : 3;
+                skillsToAdv--;
+                returnSkills.push(dupe);
               }
             }
           }
@@ -128,6 +141,7 @@ export class SpeciesSpecifics {
       }
     }
     console.log(returnSkills);
+    //this.data.items.push(returnSkills);
   }
 
   private static async getSpeciesTalents (): void {

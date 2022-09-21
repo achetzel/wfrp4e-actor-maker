@@ -55,10 +55,6 @@ export default class ActorBuilder {
                 }
             }
         }
-        returnSkills.push({name: "Lore (Cookies)", type: "skill"});
-
-        //console.log(returnSkills);
-
         return returnSkills;
     }
 }

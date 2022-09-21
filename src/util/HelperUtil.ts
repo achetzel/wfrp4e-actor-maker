@@ -45,6 +45,26 @@ export class HelperUtility {
         return result;
     }
 
+    public static getRandomUniqueNumbers(max: number, quantity: number): Array<number> {
+
+        if (max <= quantity) {
+            return ui.notifications.error(game.i18n.localize("ACTORMAKER.notification.error.randomQuantity"));
+        }
+
+        let foundArray = new Set();
+
+        while (foundArray.size < quantity) {
+            foundArray.add(Math.floor(Math.random() * (max - 1) + 1));
+        }
+        return [...foundArray];
+    }
+
+    public static getRandomNumber(max: number): number {
+        let result = Math.floor(Math.random() * (max - 1));
+
+        return result;
+    }
+
 
 
 }
