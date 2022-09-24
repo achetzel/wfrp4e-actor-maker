@@ -11,8 +11,6 @@ export class ActorMaker {
 
     const actor = await ActorBuilder.createActor(actorData);
 
-
-
     ui.notifications.info(
       game.i18n.format('ACTORMAKER.notification.actor.created', {
         name: actor.name,

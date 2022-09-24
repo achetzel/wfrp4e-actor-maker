@@ -1,7 +1,6 @@
 import {ActorData} from "../modules/model/ActorInterface.ts";
 import {ItemData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs";
 import {HelperUtility} from "./HelperUtil.ts";
-import kill = Deno.kill;
 
 export class SpeciesSpecifics {
 
@@ -9,10 +8,13 @@ export class SpeciesSpecifics {
   public species: string;
   public subspecies: string;
   public gender: string;
+  public items: ItemData;
 
   public static async processSpeciesInfo (species: string, gender: string, type: string, basicSkills: ItemData): ActorData {
     this.species = species;
     this.gender = gender;
+    this.items = basicSkills;
+
     let data: ActorData = {
       type: type,
       system: {
@@ -25,7 +27,7 @@ export class SpeciesSpecifics {
           }
         }
       },
-      items: basicSkills
+      items: this.items
     }
     this.data = data;
 
@@ -39,11 +41,13 @@ export class SpeciesSpecifics {
     await this.addSpeciesMove();
     // species skills
     await this.addSpeciesSkills();
-    // species skills
+    // species talents
     await this.addSpeciesTalents();
     // career
-    const careerName = await this.rollCareer(this.species, this.data.system.details.species.subspecies);
-    await this.addCareerData(careerName);
+ //   const careerName = await this.rollCareer(this.species, this.data.system.details.species.subspecies);
+ //   await this.addCareerData(careerName);
+
+    this.data.items = this.items;
 
     return this.data;
 
@@ -85,83 +89,35 @@ export class SpeciesSpecifics {
   }
 
   private static async addSpeciesSkills (): void {
-    let addSkills = [];
     let allSpeciesSkills: Array<string> = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['skills'];
     let keepSpeciesSkills: Array<string> = [];
     let skillsToAdv: number = 6;
-    let keepSkills: Array<number> = HelperUtility.getRandomUniqueNumbers(allSpeciesSkills.length, skillsToAdv);
+    let sixRandomElements: Array<number> = HelperUtility.getRandomUniqueNumbers(allSpeciesSkills.length, skillsToAdv);
 
-
-    for (let i: number of keepSkills) {
+    for (let i: number of sixRandomElements) {
       keepSpeciesSkills.push(allSpeciesSkills[i]);
     }
-    const packs = game.wfrp4e.tags.getPacksWithTag(["money", "skill"]);
 
-    if (!packs.length) {
-      return ui.notifications.error(game.i18n.localize("ACTORMAKER.notification.error.packs"));
-    }
-
-    for (let pack of packs) {
-      let packSkills;
-      await pack.getDocuments().then((content) => packSkills = content.filter((i) => i.type == "skill"));
-
-      for (let s: string of keepSpeciesSkills) {
-
-        for (let p: ItemData of packSkills) {
-          /* Get Lore out of the way. Lore is almost always
-             populated, but doesn't always match an existing
-             skill ( i.e. Lore (Reikland) )
-           */
-          if (s.startsWith("Lore") && p.name == "Lore ()") {
-            let dupe = p.toObject();
-            dupe.name = s;
-            dupe._id = HelperUtility.getRandomId();
-            dupe.system.advances.value = skillsToAdv > 3 ? 5 : 3;
-            skillsToAdv--;
-            addSkills.push(dupe);
-          } else if (s.startsWith("Lore") && p.name != "Lore ()") {
-            continue;
-          } else {
-            let scrubbedSkill: string = await HelperUtility.skillTextScrubber(s, p.name);
-
-            if (scrubbedSkill == p.name) {
-              if (p.system.grouped.value != "noSpec") {
-                let skill = p.toObject();
-                if (addSkills.filter((x) => x.name.includes(skill.name)).length <= 0)
-                  skill.system.advances.value = skillsToAdv > 3 ? 5 : 3;
-                  skillsToAdv--;
-                  addSkills.push(skill);
-              } else {
-                let dupe = p.toObject();
-                dupe.system.advances.value = skillsToAdv > 3 ? 5 : 3;
-                skillsToAdv--;
-                addSkills.push(dupe);
-              }
-            }
-          }
-        }
+    for (let skill: string of keepSpeciesSkills) {
+      const skillObj = await HelperUtility.findSkillObject(skill, skillsToAdv);
+      if (this.items.some(e => e.name.toLowerCase() === skillObj.name.toLowerCase())) {
+        const idx: number = this.items.findIndex(e => e.name.toLowerCase() === skillObj.name.toLowerCase());
+        this.items.splice(idx, 1);
       }
-    }
-    for (let i: number = 0; i < addSkills.length; i++) {
-      if (this.data.items.some(e => e._id === addSkills[i]._id)) {
-        const idx: number = this.data.items.findIndex(e => e._id === addSkills[i]._id);
-        this.data.items.splice(idx, 1);
-        this.data.items.push(addSkills[i]);
-      } else {
-        this.data.items.push(addSkills[i]);
-      }
+      this.items.push(skillObj);
+      skillsToAdv--;
     }
   }
 
   private static async addSpeciesTalents (): void {
     let talentList = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['talents'];
     console.log(talentList);
-    let refinedTalentList: string[] = [];
     for (let talent of talentList) {
       // number provided in talent array
       if (!isNaN(talent)) {
         for (let i: number = 0; i < talent; i++) {
-          refinedTalentList.push(await HelperUtility.getRandomTalent());
+          const talentObj = await HelperUtility.getRandomTalentObject();
+          this.processTalentObject(talentObj);
         }
         continue;
       // choice + Middenheim mod has text that could have just been a number
@@ -169,61 +125,23 @@ export class SpeciesSpecifics {
         const talentChoice: Array<string> = talent.split(",");
         const random = Math.round(Math.random() * (talentChoice.length - 1));
         let pickedTalent = talentChoice[random].trim();
-        // chose and then see if it's a middenheim text rando talent
+        // choose and then see if it's a middenheim text rando talent
         if (pickedTalent.includes("Additional Random Talent")) {
-          refinedTalentList.push(await HelperUtility.getRandomTalent());
+          const talentObject = await HelperUtility.getRandomTalentObject();
+          this.processTalentObject(talentObject);
         } else {
-          refinedTalentList.push(talentChoice[random].trim());
+          this.processTalentObject(talentChoice[random].trim());
         }
       // Middenheim mod has text that could have just been a number
       } else if (talent.includes("Additional Random Talent")) {
-        refinedTalentList.push(await HelperUtility.getRandomTalent());
+        const talentObject = await HelperUtility.getRandomTalentObject();
+        this.processTalentObject(talentObject);
       // the rest
       } else {
-        refinedTalentList.push(talent);
+        this.processTalentObject(talent);
       }
     }
-    let addTalents = [];
-    const packs = game.wfrp4e.tags.getPacksWithTag(["talent"]);
-    for (let pack of packs) {
-      let items;
 
-      await pack.getDocuments().then((content) => items = content.filter((i) => i.type == "talent"));
-
-      for (let talentName: string of refinedTalentList) {
-        // no pack talents include any parenthesis
-        let modTalentName: string = "";
-        if (talentName.includes("(")) {
-          let startParen: number = talentName.indexOf("(");
-          modTalentName = talentName.substring(0, startParen).trim();
-        }
-        // find the base talent if it has been changed and give it current name
-        // and new _id
-        if (modTalentName.length !== 0 && modTalentName.length !== talentName) {
-          if (items.some(e => e.name === modTalentName)) {
-            const idx: number = items.findIndex(e => e.name === modTalentName);
-            let dupe = items[idx].toObject();
-            dupe.name = talentName;
-            dupe._id = HelperUtility.getRandomId();
-            addTalents.push(dupe);
-          } else {
-            ui.notifications.error(
-                game.i18n.format('ACTORMAKER.notification.error.talent', { name: modTalentName })
-            );
-          }
-        // standard search
-        } else {
-          if (items.some(e => e.name === talentName)) {
-            const idx: number = items.findIndex(e => e.name === talentName);
-            addTalents.push(items[idx].toObject());
-          } else {
-            ui.notifications.error(
-                game.i18n.format('ACTORMAKER.notification.error.talent', { name: talentName })
-            );
-          }
-        }
-      }
-    }
 // TODO: Dupes both show up -> raise rank or pick another
     /*
        Now that we have a proper object find the duplicates and either
@@ -231,10 +149,40 @@ export class SpeciesSpecifics {
        object data to determine max rank, as well as, a characteristic in
        most instances
     */
-    
-    console.log(addTalents);
   }
 
+  private static processTalentObject(talentObj: Object) {
+    let isDupe = true;
+    while (isDupe) {
+      let checkDupe = this.checkForItemDupe(talentObj);
+
+      if (!checkDupe) {
+        // not a dupe, push to unique array and leave
+        this.items.push(talentObj);
+        isDupe = false;
+      } else if (checkDupe) {
+        // is a dupe -> let's check stat bonus or max rank
+        let stat = talentObj.system.max.value;
+        let maxRank = isNaN(stat) ? this.data.system.characteristics[stat].value.charAt(0) : stat;
+        if (talentObj.system.advances.value < maxRank) {
+          // can be ranked up
+          talentObj.system.advances.value += 1;
+          this.items.push(talentObj);
+          isDupe = false;
+        } else {
+          // max rank, get a new talent
+          talentObj = HelperUtility.getRandomTalentObject();
+          continue;
+        }
+      }
+    }
+
+
+  }
+
+  private static checkForItemDupe (item: Object): boolean {
+    return !!this.item.some(e => e.name == item.name);
+  }
   private static async rollCareer(species: string, subspecies?: string) {
 
     let tableName: string;
