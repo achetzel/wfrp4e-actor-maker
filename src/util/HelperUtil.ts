@@ -20,14 +20,20 @@ export class HelperUtility {
             skillName = skillName.substring(0, startParen).trim();
             skillName += " ()";
         }
-        // These corner cases also have a space between parenthesis in the packs
-        let testPackSkillText: Array<string> = ["Channeling()", "Art()", "Animal Training()"];
 
-        for (let i: number = 0; i < testPackSkillText.length; i++) {
-            if (skillName.startsWith(testPackSkillText[i])) {
-                let startParen = skillName.indexOf("(");
-                skillName = skillName.substring(0, startParen).trim();
-                skillName += " ( )";
+        // Other fixes that are provided in race config, but don't match compendium
+        let otherFixes: Array<Object> = [
+            { value: "Channeling()", fix: "Channeling ( )" },
+            { value: "Art()", fix: "Art ( )" },
+            { value: "Animal Training", fix: "Animal Training ( )" },
+            { value: "Entertain (Sing)", fix: "Entertain (Singing)" },
+            { value: "Sail", fix: "Sail ()" },
+            { value: "Language (Eltharin)", fix:"Language (Elthárin)" }
+        ];
+
+        for (let i: number = 0; i < otherFixes.length; i++) {
+            if (skillName === otherFixes[i].value) {
+                skillName = otherFixes[i].fix;
             }
         }
         return Promise.resolve(skillName);
@@ -89,8 +95,11 @@ public static talentTextScrubber() {
         let foundArray = new Set();
 
         while (foundArray.size < quantity) {
-            foundArray.add(Math.floor(Math.random() * (max - 1) + 1));
+            foundArray.add(Math.round(Math.random() * (max - 1)));
         }
+
+ console.log(foundArray);
+
         return [...foundArray];
     }
 
@@ -111,6 +120,7 @@ public static talentTextScrubber() {
         for (let pack of packs) {
             let items;
             let idx: number;
+            let skillCopy: Object;
             await pack.getDocuments().then((content) => items = content.filter((i) => i.type == type));
 
             if (name.startsWith("Lore")) {
@@ -120,6 +130,8 @@ public static talentTextScrubber() {
                 */
                 if (items.findIndex(e => e.name === "Lore ()") > -1) {
                     idx = items.findIndex(e => e.name === "Lore ()");
+                    skillCopy = items[idx].toObject();
+                    skillCopy.name = name;
                 } else {
                     continue;
                 }
@@ -129,12 +141,12 @@ public static talentTextScrubber() {
 
                 if (items.findIndex(e => e.name === scrubbedSkill) > -1) {
                     idx = items.findIndex(e => e.name === scrubbedSkill);
+                    skillCopy = items[idx].toObject();
+                    skillCopy.name = scrubbedSkill;
                 } else {
                     continue;
                 }
             }
-            let skillCopy: Object = items[idx].toObject();
-            skillCopy.name = name;
             skillCopy._id = this.getRandomId();
             skillCopy.system.advances.value = skillsToAdv > 3 ? 5 : 3;
             return Promise.resolve(skillCopy);
@@ -154,19 +166,38 @@ public static talentTextScrubber() {
     }
 
     public static async findTalentObject(talent: string): Promise<Object> {
-        const packs = game.wfrp4e.tags.getPacksWithTag(["talent"]);
+        const tags: Array<string> = ["talent"];
+        const type: string = "talent";
+        let talentNameFixed: string | null = null;
+console.log(talent);
+        if ( talent.includes("(") ) {
+            // no pack talents have parenthesis (2022-09-24)
+            let startParen: number = talent.indexOf("(");
+            talentNameFixed = talent.substring(0, startParen).trim();
+        }
+        const packs = game.wfrp4e.tags.getPacksWithTag(tags);
+
+        if (!packs.length) {
+            ui.notifications.error(game.i18n.format("ACTORMAKER.notification.error.packs", { tags: tags }));
+        }
+
         for (let pack of packs) {
             let items;
-            await pack.getDocuments().then((content) => items = content.filter((i) => i.type == "talent"));
-            if (items.some(e => e.name === talent)) {
-                const idx: number = items.findIndex(e => e.name === talentName);
+            await pack.getDocuments().then((content) => items = content.filter((i) => i.type == type));
+            if (talentNameFixed === null && items.some(e => e.name === talent)) {
+                const idx: number = items.findIndex(e => e.name === talent);
                 return Promise.resolve(items[idx].toObject());
-            } else {
-                ui.notifications.error(
-                    game.i18n.format('ACTORMAKER.notification.error.talent', { name: talent })
-                );
+            } else if (items.some(e => e.name === talentNameFixed)) {
+                const idx: number = items.findIndex(e => e.name === talentNameFixed);
+                let talentDupe = items[idx].toObject();
+                talentDupe.name = talent;
+                talentDupe._id = this.getRandomId();
+                return Promise.resolve(talentDupe)
             }
         }
+        ui.notifications.error(
+            game.i18n.format('ACTORMAKER.notification.error.talent', { name: talent })
+        );
         return Promise.reject();
     }
 

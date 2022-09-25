@@ -8,6 +8,9 @@ export default class ActorBuilder {
         // TODO: differentiate types
         const type: string = "npc";
         const species: string = (await game.wfrp4e.tables.rollTable('species')).species;
+
+//const species = 'welf';
+
         let gender: string = "Male";
         if (Math.random() < 0.5) {
             gender = "Female";

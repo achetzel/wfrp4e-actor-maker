@@ -113,32 +113,39 @@ export class SpeciesSpecifics {
     let talentList = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['talents'];
     console.log(talentList);
     for (let talent of talentList) {
+      let talentObj: Object;
       // number provided in talent array
+      // process multiple talents at once (potentially)
       if (!isNaN(talent)) {
         for (let i: number = 0; i < talent; i++) {
-          const talentObj = await HelperUtility.getRandomTalentObject();
-          this.processTalentObject(talentObj);
+          talentObj = await HelperUtility.getRandomTalentObject();
+          await this.processTalentObject(talentObj);
         }
         continue;
       // choice + Middenheim mod has text that could have just been a number
       } else if (talent.includes(",")) {
-        const talentChoice: Array<string> = talent.split(",");
-        const random = Math.round(Math.random() * (talentChoice.length - 1));
+        let talentChoice: Array<string> = talent.split(",");
+        const random = HelperUtility.getRandomUniqueNumbers(talentChoice.length, 1);
         let pickedTalent = talentChoice[random].trim();
         // choose and then see if it's a middenheim text rando talent
         if (pickedTalent.includes("Additional Random Talent")) {
-          const talentObject = await HelperUtility.getRandomTalentObject();
-          this.processTalentObject(talentObject);
+          talentObj = await HelperUtility.getRandomTalentObject();
         } else {
-          this.processTalentObject(talentChoice[random].trim());
+          talentObj = await HelperUtility.findTalentObject(talentChoice[random].trim());
         }
       // Middenheim mod has text that could have just been a number
       } else if (talent.includes("Additional Random Talent")) {
-        const talentObject = await HelperUtility.getRandomTalentObject();
-        this.processTalentObject(talentObject);
+        talentObj = await HelperUtility.getRandomTalentObject();
       // the rest
       } else {
-        this.processTalentObject(talent);
+        talentObj = await HelperUtility.findTalentObject(talent)
+      }
+      if (talentObj) {
+        await this.processTalentObject(talentObj);
+      } else {
+        ui.notifications.error(
+            game.i18n.format('ACTORMAKER.notification.error.talent', { name: talent })
+        );
       }
     }
 
@@ -151,7 +158,7 @@ export class SpeciesSpecifics {
     */
   }
 
-  private static processTalentObject(talentObj: Object) {
+  private static async processTalentObject(talentObj: Object) {
     let isDupe = true;
     while (isDupe) {
       let checkDupe = this.checkForItemDupe(talentObj);
@@ -159,11 +166,15 @@ export class SpeciesSpecifics {
       if (!checkDupe) {
         // not a dupe, push to unique array and leave
         this.items.push(talentObj);
+console.log(talentObj);
         isDupe = false;
       } else if (checkDupe) {
+
+ console.log(talentObj);
+ console.log(this.data.system.characteristics);
         // is a dupe -> let's check stat bonus or max rank
-        let stat = talentObj.system.max.value;
-        let maxRank = isNaN(stat) ? this.data.system.characteristics[stat].value.charAt(0) : stat;
+        let stat: string | number = talentObj.system.max.value;
+        let maxRank: number = isNaN(stat) ? this.data.system.characteristics[stat].initial.toString().charAt(0) : stat;
         if (talentObj.system.advances.value < maxRank) {
           // can be ranked up
           talentObj.system.advances.value += 1;
@@ -171,8 +182,7 @@ export class SpeciesSpecifics {
           isDupe = false;
         } else {
           // max rank, get a new talent
-          talentObj = HelperUtility.getRandomTalentObject();
-          continue;
+          talentObj = await HelperUtility.getRandomTalentObject();
         }
       }
     }
@@ -181,7 +191,7 @@ export class SpeciesSpecifics {
   }
 
   private static checkForItemDupe (item: Object): boolean {
-    return !!this.item.some(e => e.name == item.name);
+    return !!this.items.some(e => e.name == item.name);
   }
   private static async rollCareer(species: string, subspecies?: string) {
 
