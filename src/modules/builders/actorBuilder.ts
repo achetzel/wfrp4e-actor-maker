@@ -9,7 +9,7 @@ export default class ActorBuilder {
         const type: string = "npc";
         const species: string = (await game.wfrp4e.tables.rollTable('species')).species;
 
-//const species = 'welf';
+//const species = 'halfling';
 
         let gender: string = "Male";
         if (Math.random() < 0.5) {

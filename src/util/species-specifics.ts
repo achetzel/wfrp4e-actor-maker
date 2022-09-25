@@ -44,8 +44,7 @@ export class SpeciesSpecifics {
     // species talents
     await this.addSpeciesTalents();
     // career
- //   const careerName = await this.rollCareer(this.species, this.data.system.details.species.subspecies);
- //   await this.addCareerData(careerName);
+    await this.addCareerData();
 
     this.data.items = this.items;
 
@@ -111,7 +110,7 @@ export class SpeciesSpecifics {
 
   private static async addSpeciesTalents (): void {
     let talentList = await game.wfrp4e.utility.speciesSkillsTalents(this.species, this.data.system.details.species.subspecies)['talents'];
-    console.log(talentList);
+
     for (let talent of talentList) {
       let talentObj: Object;
       // number provided in talent array
@@ -148,14 +147,6 @@ export class SpeciesSpecifics {
         );
       }
     }
-
-// TODO: Dupes both show up -> raise rank or pick another
-    /*
-       Now that we have a proper object find the duplicates and either
-       raise their rank or find a replacement. This sucks because you need
-       object data to determine max rank, as well as, a characteristic in
-       most instances
-    */
   }
 
   private static async processTalentObject(talentObj: Object) {
@@ -166,12 +157,8 @@ export class SpeciesSpecifics {
       if (!checkDupe) {
         // not a dupe, push to unique array and leave
         this.items.push(talentObj);
-console.log(talentObj);
         isDupe = false;
       } else if (checkDupe) {
-
- console.log(talentObj);
- console.log(this.data.system.characteristics);
         // is a dupe -> let's check stat bonus or max rank
         let stat: string | number = talentObj.system.max.value;
         let maxRank: number = isNaN(stat) ? this.data.system.characteristics[stat].initial.toString().charAt(0) : stat;
@@ -186,14 +173,28 @@ console.log(talentObj);
         }
       }
     }
-
-
   }
 
   private static checkForItemDupe (item: Object): boolean {
     return !!this.items.some(e => e.name == item.name);
   }
-  private static async rollCareer(species: string, subspecies?: string) {
+
+  private static async addCareerData(): void {
+    let careerData = await this.getRandomCareerObject();
+    // TODO: Can do this because only 1 career atm. Need to iterate obj when option for
+    // TODO: multiple careers is implemented
+    this.items.push(careerData);
+    // TODO: Starting Trappings
+    // TODO: Starter monies
+    // TODO: Starter skill increases
+  }
+
+  private static async getRandomCareerObject(): Promise<Object> {
+    const career = await this.rollCareer(this.species, this.data.system.details.species.subspecies);
+    return await this.findCareerObject(career);
+  }
+
+  private static async rollCareer(species: string, subspecies?: string): string {
 
     let tableName: string;
 
@@ -211,32 +212,32 @@ console.log(talentObj);
     return roll.object.text;
   }
 
-  private static async addCareerData(careerName: string): void {
-    let packResults = game.wfrp4e.tags.getPacksWithTag("career");
-    let itemResults = game.items.filter((i) => i.type == "career");
+  public static async findCareerObject(career: string): Promise<Object> {
+    let tags: Array<string> = ["career"];
+    let type: string = "career"
+    let packs = game.wfrp4e.tags.getPacksWithTag(tags);
+    let items = game.items.filter((i) => i.type == type);
     let careerData;
-    for (let pack of packResults) {
-      itemResults = itemResults.concat((await pack.getDocuments()).filter((i) => i.type == "career"));
+
+    for (let pack of packs) {
+      items = items.concat((await pack.getDocuments()).filter((i) => i.type == type));
     }
-    for (let career of itemResults) {
-      if (career.system.careergroup.value == careerName && career.system.level.value == 1)
-        careerData = career.toObject();
-      if (careerData)
-        break;
+
+    for (let i of items) {
+      if (i.system.careergroup.value == career && i.system.level.value == 1) { careerData = i.toObject(); }
+      if (careerData) { break; }
     }
     if (!careerData) {
-      ui.notifications.error(`Career ${careerName} not found`);
+      ui.notifications.error(`Career ${career} not found`);
+      return Promise.reject();
     }
+
     // oddly enough it comes back with codes, but "description" has go through config
     const status = careerData.system.status;
-    careerData.system.status = game.wfrp4e.config.statusTiers[status.tier] + " " + status.standing;
-    // TODO: Can do this because only 1 career atm. Need to iterate obj when option for
-    // TODO: multiple careers is implemented (like skills)
-    if(this.data.items) {
-      this.data.items.push(careerData);
-    } else {
-      this.data.items = [];
-      this.data.items.push(careerData);
-    }
+    //careerData.system.status.value = game.wfrp4e.config.statusTiers[status.tier] + " " + status.standing;
+
+    careerData.system.current.value = true;
+
+    return Promise.resolve(careerData);
   }
 }

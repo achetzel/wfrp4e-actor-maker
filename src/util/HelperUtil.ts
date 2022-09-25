@@ -39,43 +39,6 @@ export class HelperUtility {
         return Promise.resolve(skillName);
     }
 
-public static talentTextScrubber() {
-    let addTalents = [];
-    for (let talentName: string of refinedTalentList) {
-        // no pack talents include any parenthesis
-        let modTalentName: string = "";
-        if (talentName.includes("(")) {
-            let startParen: number = talentName.indexOf("(");
-            modTalentName = talentName.substring(0, startParen).trim();
-        }
-        // find the base talent if it has been changed and give it current name
-        // and new _id
-        if (modTalentName.length !== 0 && modTalentName.length !== talentName) {
-            if (items.some(e => e.name === modTalentName)) {
-                const idx: number = items.findIndex(e => e.name === modTalentName);
-                let dupe = items[idx].toObject();
-                dupe.name = talentName;
-                dupe._id = HelperUtility.getRandomId();
-                let test: boolean = false;
-            } else {
-                ui.notifications.error(
-                    game.i18n.format('ACTORMAKER.notification.error.talent', { name: modTalentName })
-                );
-            }
-            // standard search
-        } else {
-            if (items.some(e => e.name === talentName)) {
-                const idx: number = items.findIndex(e => e.name === talentName);
-                addTalents.push(items[idx].toObject());
-            } else {
-                ui.notifications.error(
-                    game.i18n.format('ACTORMAKER.notification.error.talent', { name: talentName })
-                );
-            }
-        }
-    }
-}
-
     public static getRandomId(): string {
         let length: number = 16;
         let chars: string = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -97,8 +60,6 @@ public static talentTextScrubber() {
         while (foundArray.size < quantity) {
             foundArray.add(Math.round(Math.random() * (max - 1)));
         }
-
- console.log(foundArray);
 
         return [...foundArray];
     }
@@ -169,7 +130,7 @@ public static talentTextScrubber() {
         const tags: Array<string> = ["talent"];
         const type: string = "talent";
         let talentNameFixed: string | null = null;
-console.log(talent);
+
         if ( talent.includes("(") ) {
             // no pack talents have parenthesis (2022-09-24)
             let startParen: number = talent.indexOf("(");
