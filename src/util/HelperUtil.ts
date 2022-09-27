@@ -162,6 +162,61 @@ export class HelperUtility {
         return Promise.reject();
     }
 
+    public static async findTrappingObject(trapping: string): Promise<Object> {
+        const tags: Array<string> = ["trapping", "armour", "weapon"];
+
+        const packs = game.wfrp4e.tags.getPacksWithTag(tags);
+
+        if (!packs.length) {
+            ui.notifications.error(game.i18n.format("ACTORMAKER.notification.error.packs", { tags: tags }));
+        }
+
+        for (let pack of packs) {
+            let items;
+            await pack.getDocuments().then((content) => items = content.filter((i) => i.type == "trapping" || i.type == "armour" || i.type == "weapon"));
+            if (items.some(e => e.name === trapping)) {
+                const idx: number = items.findIndex(e => e.name === trapping);
+                let trappingDupe = items[idx].toObject();
+                return Promise.resolve(trappingDupe)
+            }
+        }
+        ui.notifications.warn(
+            game.i18n.format('ACTORMAKER.notification.warn.trapping', { name: trapping })
+        );
+        return Promise.resolve();
+    }
+
+    public static async findCoinObject(coinType: string): Promise<Object> {
+        const tags: Array<string> = ["money"];
+        const type: string = "money";
+        const coinTypeRef: Object = {
+            gold: "Gold Crown",
+            silver: "Silver Shilling",
+            brass: "Brass Penny"
+        }
+        const coin: string = coinTypeRef[coinType.toLowerCase()];
+
+        const packs = game.wfrp4e.tags.getPacksWithTag(tags);
+
+        if (!packs.length) {
+            ui.notifications.error(game.i18n.format("ACTORMAKER.notification.error.packs", { tags: tags }));
+        }
+
+        for (let pack of packs) {
+            let items;
+            await pack.getDocuments().then((content) => items = content.filter((i) => i.type == type));
+            if (items.some(e => e.name === coin)) {
+                const idx: number = items.findIndex(e => e.name === coin);
+                let coinDupe = items[idx].toObject();
+                return Promise.resolve(coinDupe)
+            }
+        }
+        ui.notifications.warn(
+            game.i18n.format('ACTORMAKER.notification.warn.coin', { name: coinType })
+        );
+        return Promise.reject();
+    }
+
     public static checkForDuplicates(obj: Array<Object>) {
 
     }

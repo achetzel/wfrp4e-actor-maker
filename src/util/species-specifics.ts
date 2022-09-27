@@ -181,12 +181,56 @@ export class SpeciesSpecifics {
 
   private static async addCareerData(): void {
     let careerData = await this.getRandomCareerObject();
+    // status is accessed in details section of ActorData
+    this.data.system.details.status = careerData.system.status;
+    // TODO: Starting Trappings
+    let careerTrappings: Array<string> = careerData.system.trappings;
+    let careerTrappingsData: Array<Object> = [];
+    // quit if we career doesn't get trappings
+    if (careerTrappings[0].toLowerCase() === "none") { return; }
+
+    for (let i: number = 0; i < careerTrappings.length; i++) {
+      const trappingData = await HelperUtility.findTrappingObject(careerTrappings[i]);
+      // Trapping data is not very well sanitized. If system can't find it you get a
+      // warning and we move on
+      if (trappingData) {
+        careerTrappingsData.push(trappingData);
+      } else {
+        continue;
+      }
+    }
+    // TODO: Starter monies
+    let [coinType, amount] = careerData.system.status.value.split(" ");
+    const die = game.wfrp4e.config.earningValues[careerData.system.status.tier];
+    let payRoll: number = 0;
+
+    if (die == 1) {
+      payRoll = die * amount;
+    } else {
+      let r = new Roll(die, {});
+      await r.evaluate();
+      payRoll = r.total;
+    }
+
+    if (payRoll > 0) {
+      let coins = await HelperUtility.findCoinObject(coinType);
+      coins.system.quantity.value = payRoll;
+      this.items.push(coins);
+    }
+
+    
+    // TODO: Starter skill increases
+
+
     // TODO: Can do this because only 1 career atm. Need to iterate obj when option for
     // TODO: multiple careers is implemented
     this.items.push(careerData);
-    // TODO: Starting Trappings
-    // TODO: Starter monies
-    // TODO: Starter skill increases
+    if (careerTrappingsData.length > 0) {
+      for (let trapping: Object of careerTrappingsData) {
+        this.items.push(trapping);
+      }
+    }
+
   }
 
   private static async getRandomCareerObject(): Promise<Object> {
@@ -194,7 +238,7 @@ export class SpeciesSpecifics {
     return await this.findCareerObject(career);
   }
 
-  private static async rollCareer(species: string, subspecies?: string): string {
+  private static async rollCareer(species: string, subspecies?: string): Promise<string> {
 
     let tableName: string;
 
@@ -209,7 +253,7 @@ export class SpeciesSpecifics {
     }
     // TODO: Try / Catch
     let roll = await game.wfrp4e.tables.rollTable("career", {}, tableName);
-    return roll.object.text;
+    return Promise.resolve(roll.object.text);
   }
 
   public static async findCareerObject(career: string): Promise<Object> {
@@ -233,9 +277,8 @@ export class SpeciesSpecifics {
     }
 
     // oddly enough it comes back with codes, but "description" has go through config
-    const status = careerData.system.status;
-    //careerData.system.status.value = game.wfrp4e.config.statusTiers[status.tier] + " " + status.standing;
-
+    const status: Object = careerData.system.status;
+    careerData.system.status.value = game.wfrp4e.config.statusTiers[status.tier] + " " + status.standing;
     careerData.system.current.value = true;
 
     return Promise.resolve(careerData);

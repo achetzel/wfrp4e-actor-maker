@@ -21,5 +21,7 @@
   "ACTORMAKER.notification.error.packs": "Could not locate any packs with those tags: {tags}",
   "ACTORMAKER.notification.error.randomQuantity": "Quantity did not provide enough randomness (low max value)",
   "ACTORMAKER.notification.error.skills": "Error could not find requested skill: {name}",
-  "ACTORMAKER.notification.error.talent": "Error could not find requested talent: {name}"
+  "ACTORMAKER.notification.error.talent": "Error could not find requested talent: {name}",
+  "ACTORMAKER.notification.warn.trapping": "Error could not find requested trapping: {name}",
+  "ACTORMAKER.notification.warn.coin": "Error could not find requested coin type: {name}"
 }
